@@ -1,6 +1,6 @@
 import unittest
 
-from utils import ConfigHelper
+from utils import ConfigHelper, HttpHelper, get_sample_dataset
 
 
 class TestUtils(unittest.TestCase):
@@ -24,3 +24,26 @@ class TestUtils(unittest.TestCase):
         self.assertEqual('defaultvalue', ConfigHelper.get_config_value('missingkey', default_value='defaultvalue'))
         self.assertEqual('defaultvalue', ConfigHelper.get_config_value('missingkey', 'missingsection',
                                                                        default_value='defaultvalue'))
+
+    @unittest.skip
+    def test_download_file(self):
+        local_file_path = 'aclImdb_v1.tar.gz'
+        HttpHelper.download_file('https://ai.stanford.edu/~amaas/data/sentiment/aclImdb_v1.tar.gz',
+                                 local_file_path)
+
+    def test_get_sample_dataset(self):
+        class_counts_dict = {
+            'A': 100,
+            'B': 91,
+            'C': 109
+        }
+        class_counts = [(k, v) for k, v in class_counts_dict.items()]  # total of 300 elements
+        self.assertEqual([], get_sample_dataset(class_counts, 400))
+        for n in [1, 200, 300]:
+            sample = get_sample_dataset(class_counts, n)
+            self.assertEqual(n, len(sample),
+                             msg='Test case failed for sample size = {}'.format(n))
+            for c, i in sample:
+                # test to ensure returned sample only contains specified classes
+                # and row indices are bounded within [0, #rows of the class)
+                self.assertTrue(c in class_counts_dict and 0 <= i <= class_counts_dict[c])
