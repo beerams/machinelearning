@@ -1,6 +1,6 @@
 import unittest
 
-from util import ConfigHelper
+from utils import ConfigHelper
 
 
 class TestUtils(unittest.TestCase):
@@ -15,3 +15,11 @@ class TestUtils(unittest.TestCase):
 
         self.assertEqual('section1-value1+section1-value2+value3+section2-value1+section2-value2+value3+value',
                          ConfigHelper.get_config_value('key', 'section3'))
+
+        self.assertEqual('value1', ConfigHelper.get_config_value('key1'))
+        self.assertEqual('value2', ConfigHelper.get_config_value('key2'))
+        self.assertEqual('value1+value2+value3', ConfigHelper.get_config_value('key3'))
+
+        self.assertEqual('defaultvalue', ConfigHelper.get_config_value('missingkey', default_value='defaultvalue'))
+        self.assertEqual('defaultvalue', ConfigHelper.get_config_value('missingkey', 'missingsection',
+                                                                       default_value='defaultvalue'))
