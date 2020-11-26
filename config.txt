@@ -1,0 +1,10 @@
+[DEFAULT]
+dataset_dir: data
+temp_dir: temp
+
+[corpora]
+stanford_movie_review_dataset_url: https://ai.stanford.edu/~amaas/data/sentiment/aclImdb_v1.tar.gz
+stanford_movie_review_file_prefix: stanford_movie_reviews
+stanford_movie_review_train_file_path: ${dataset_dir}/${stanford_movie_review_file_prefix}_train.txt
+stanford_movie_review_test_file_path: ${dataset_dir}/${stanford_movie_review_file_prefix}_test.txt
+stanford_movie_review_dev_file_path: ${dataset_dir}/${stanford_movie_review_file_prefix}_dev.txt
