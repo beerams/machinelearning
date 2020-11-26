@@ -10,7 +10,7 @@ import uuid
 
 from utils import ConfigHelper, get_sample_dataset, HttpHelper
 
-LOGGER = logging.getLogger('app.'+__name__)
+LOGGER = logging.getLogger(__name__)
 CORPORA_CONFIG_SECTION: str = 'corpora'
 STANFORD_MOVIE_REVIEW_URL: str = 'stanford_movie_review_dataset_url'
 STANFORD_MOVIE_REVIEW_TRAIN_FILE_PATH: str = 'stanford_movie_review_train_file_path'
@@ -27,7 +27,7 @@ def sample_stanford_imdb_dataset(train_size: int = 5000, dev_size: int = 1000, t
     1. Raw/gzipped file is downloaded to a temp working directory
     2. gzip file is extracted
     3. train-positive, train-negative, test-positive, test-negative files are selected
-    4. a sample (if specified sizes) is selected from all 4 types listed above
+    4. a sample (of specified sizes) is selected from all 4 types listed above
     5. read sampled files and save into train, dev and test files
     6. each row in new files contain both text and corresponding label
     """
