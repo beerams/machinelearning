@@ -5,9 +5,10 @@ import codecs
 import glob
 import logging
 import os
+import shutil
 import uuid
 
-from utils import ConfigHelper, get_sample_dataset
+from utils import ConfigHelper, get_sample_dataset, HttpHelper
 
 LOGGER = logging.getLogger('app.'+__name__)
 CORPORA_CONFIG_SECTION: str = 'corpora'
@@ -40,17 +41,15 @@ def sample_stanford_imdb_dataset(train_size: int = 5000, dev_size: int = 1000, t
 
     # create local temp directory
     LOGGER.debug('Creating temp working directory')
-    # os.makedirs(temp_working_directory)
+    os.makedirs(temp_working_directory)
 
     # download
     LOGGER.debug('Downloading %s and saving into %s', master_data_set_url, raw_data_file_path)
-    # HttpHelper.download_file(master_data_set_url, raw_data_file_path)
+    HttpHelper.download_file(master_data_set_url, raw_data_file_path)
 
     # unpack/extract
     LOGGER.debug('Unpacking %s', raw_data_file_path)
-    # shutil.unpack_archive(raw_data_file_path, temp_working_directory)
-
-    # temp_working_directory = 'temp/605867db-d277-4dd0-8921-e567bd684088'
+    shutil.unpack_archive(raw_data_file_path, temp_working_directory)
 
     # collect training files for both positive and negative classes
     training_class_files: dict = {
