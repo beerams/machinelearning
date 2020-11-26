@@ -1,9 +1,10 @@
 [DEFAULT]
-key1=value1
-key2=value2
-key3=${key1}+${key2}+value3
+key1: value1
+key2: value2
+key3: ${key1}+${key2}+value3
 
 [section1]
+# properties can be defined as '<key>: <value>' or 'key=<value>'
 key1=section1-value1
 key2=section1-value2
 key3=${key1}+${key2}+value3
@@ -15,3 +16,4 @@ key3: ${key1}+${key2}+value3
 
 [section3]
 key: ${section1:key3}+${section2:key3}+value
+key_x: ${key1}+${section1:key1}+${section2:key1}+value_x
