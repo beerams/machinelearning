@@ -22,6 +22,14 @@ def sample_stanford_imdb_dataset(train_size: int = 5000, dev_size: int = 1000, t
     """
     Samples from 'Large Movie Review Dataset' and creates a smaller dataset for training, validation and testing
     The corpora is hosted at https://ai.stanford.edu/~amaas/data/sentiment/aclImdb_v1.tar.gz
+
+    Files are processed as follows:
+    1. Raw/gzipped file is downloaded to a temp working directory
+    2. gzip file is extracted
+    3. train-positive, train-negative, test-positive, test-negative files are selected
+    4. a sample (if specified sizes) is selected from all 4 types listed above
+    5. read sampled files and save into train, dev and test files
+    6. each row in new files contain both text and corresponding label
     """
     # file paths
     # ensure data folder exists
