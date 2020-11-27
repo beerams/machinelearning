@@ -4,7 +4,8 @@ import shutil
 import unittest
 from unittest.mock import patch
 
-from corpora_utils import sample_stanford_imdb_dataset
+from corpora_utils import sample_stanford_imdb_dataset, clean_text, get_bow_dictionary, \
+    get_stanford_imbd_vocabulary, get_stanford_imdb_markup_vocabulary, get_stanford_imdb_labels_features
 from utils import ConfigHelper
 
 
@@ -39,3 +40,46 @@ class TestCorporaUtils(unittest.TestCase):
         finally:
             shutil.rmtree('data')
             shutil.rmtree('temp')
+
+    def test_clean_text(self):
+        import corpora_utils
+        temp = list(corpora_utils.HTML_WHITESPACE_PATTERNS)
+        corpora_utils.HTML_WHITESPACE_PATTERNS.extend([r'<pre */?>'])
+        try:
+            s = ' \t\nabcd <br> <br />  <br > <br/> <br   /><pre><pre/><pre /> efg\n\t  '
+            self.assertEqual('abcd               efg', clean_text(s))
+        finally:
+            corpora_utils.HTML_WHITESPACE_PATTERNS = list(temp)
+
+    def test_get_bow_dictionary(self):
+        s = 'The road goes ever on and on, down from the road where it began.'
+        self.assertEqual({
+            'The': 1,
+            'road': 2,
+            'goes': 1,
+            'ever': 1,
+            'on': 1,
+            'and': 1,
+            'on,': 1,
+            'down': 1,
+            'from': 1,
+            'the': 1,
+            'where': 1,
+            'it': 1,
+            'began.': 1,
+        }, get_bow_dictionary(s))
+
+    def test_get_stanford_imbd_vocabulary(self):
+        vocabulary: set = get_stanford_imbd_vocabulary('text_file_for_test.txt')
+        self.assertEqual(20, len(vocabulary))
+
+    def test_get_stanford_imdb_markup_vocabulary(self):
+        vocabulary: set = get_stanford_imdb_markup_vocabulary('text_file_for_test.txt')
+        self.assertEqual({'<pre/>', '<br>', '<p>', '<br />', '<test 123>'}, vocabulary)
+
+    def test_get_stanford_imdb_labels_features(self):
+        labels_features = get_stanford_imdb_labels_features('text_file_for_test.txt')
+        self.assertEqual(5, len(labels_features))
+        self.assertEqual((1, {'efg': 1, '<p>': 1, '<pre/>': 1}), labels_features[2])
+        self.assertEqual((1, {'hijk': 1}), labels_features[3])
+        self.assertEqual((-1, {'lmnop': 1, '<test': 1, '123>': 1}), labels_features[4])
