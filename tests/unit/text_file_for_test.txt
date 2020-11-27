@@ -1,0 +1,7 @@
+1 this file is used in unit tests, don't delete
+-1 abcd is <pre/>
+1 efg <p> <br> <pre/>
+
+1 hijk <br />
+
+-1 lmnop <test 123>

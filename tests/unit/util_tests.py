@@ -1,6 +1,6 @@
 import unittest
 
-from utils import ConfigHelper, HttpHelper, get_sample_dataset
+from utils import ConfigHelper, HttpHelper, get_sample_dataset, StringHelper, FileHelper
 
 
 class TestUtils(unittest.TestCase):
@@ -47,3 +47,11 @@ class TestUtils(unittest.TestCase):
                 # test to ensure returned sample only contains specified classes
                 # and row indices are bounded within [0, #rows of the class)
                 self.assertTrue(c in class_counts_dict and 0 <= i <= class_counts_dict[c])
+
+    def test_find_markups(self):
+        markups = StringHelper.find_markups('this is a <test> string <> to find <markups>. N is <= 10 or >= 20 >>><<< END!')
+        self.assertEqual(['<test>', '<>', '<markups>', '<= 10 or >'], markups)
+
+    def test_read_lines(self):
+        lines = [line for line in FileHelper.read_lines('text_file_for_test.txt')]
+        self.assertEqual(7, len(lines))
