@@ -1,14 +1,15 @@
 """
 Utility/helper functions to read corpora
 """
-import codecs
+import collections
 import glob
 import logging
 import os
+import re
 import shutil
 import uuid
 
-from utils import ConfigHelper, get_sample_dataset, HttpHelper
+from utils import ConfigHelper, get_sample_dataset, HttpHelper, FileHelper
 
 LOGGER = logging.getLogger(__name__)
 CORPORA_CONFIG_SECTION: str = 'corpora'
@@ -16,6 +17,7 @@ STANFORD_MOVIE_REVIEW_URL: str = 'stanford_movie_review_dataset_url'
 STANFORD_MOVIE_REVIEW_TRAIN_FILE_PATH: str = 'stanford_movie_review_train_file_path'
 STANFORD_MOVIE_REVIEW_TEST_FILE_PATH: str = 'stanford_movie_review_test_file_path'
 STANFORD_MOVIE_REVIEW_DEV_FILE_PATH: str = 'stanford_movie_review_dev_file_path'
+HTML_WHITESPACE_PATTERNS: list = [r'<br */?>']
 
 
 def sample_stanford_imdb_dataset(train_size: int = 5000, dev_size: int = 1000, test_size: int = 5000):
@@ -102,8 +104,77 @@ def _download_file(url: str, local_file_path: str):
 
 
 def _save_dataset(file_path: str, class_indices: list, class_files: dict):
-    with codecs.open(file_path, 'w', encoding='utf-8') as f:
+    with open(file_path, 'w', encoding='utf-8') as f:
         for c, i in class_indices:
             sample_file_path = class_files[c][i]
-            with codecs.open(sample_file_path, 'r', encoding='utf-8') as sf:
+            with open(sample_file_path, 'r', encoding='utf-8') as sf:
                 f.write('{} {}\n'.format(c, sf.read().strip()))
+
+
+def clean_text(text: str):
+    """
+    Cleans text:
+        > removes leading/trailing whitespaces
+        > replaces whitespace html tags with a space. Eg: <br />
+    """
+    text = text.strip()
+    matching_tags = [tag for ptrn in HTML_WHITESPACE_PATTERNS for tag in re.findall(ptrn, text)]
+    for tag in matching_tags:
+        text = text.replace(tag, ' ')
+
+    return text
+
+
+def get_bow_dictionary(text: str):
+    """
+    Splits given text into words and returns a bag-of-word representation as a dictionary
+    The dictionary basically contains word counts
+    """
+    return collections.Counter(text.split())
+
+
+def get_stanford_imbd_vocabulary(file_path: str):
+    """
+    Extracts all words from given file. Returns a set
+    """
+    vocab = set()
+    for line in FileHelper.read_lines(file_path):
+        line = line.strip()
+        if line:
+            label, text = line.split(sep=' ', maxsplit=1)
+            vocab.update(text.strip().split())
+    return vocab
+
+
+def get_stanford_imdb_markup_vocabulary(file_path: str):
+    """
+    Returns all markup substrings. Eg: <br>, <p>, <br />, etc
+    """
+    vocab = set()
+    for line in FileHelper.read_lines(file_path):
+        line = line.strip()
+        if line:
+            label, text = line.split(sep=' ', maxsplit=1)
+            vocab.update(re.findall(r'<.*?>', text))
+    return vocab
+
+
+def get_stanford_imdb_labels_features(file_path: str):
+    """
+    Stanford IMDB movie reviews will be in the format
+    <label#1 1/-1> <text#1>
+    <label#2 1/-1> <text#2>
+    ...
+    ...
+    <label#N 1/-1> <text#N>
+
+    This utility function reads all lines from the file, and returns an array of tuples.
+    Each tuple contains (<label 1/-1>, <dictionary of word counts>)
+    """
+    data = []
+    for line in FileHelper.read_lines(file_path):
+        line = line.strip()
+        if line:
+            label, text = line.split(sep=' ', maxsplit=1)
+            data.append((int(label), get_bow_dictionary(clean_text(text))))
+    return data
