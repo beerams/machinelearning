@@ -51,46 +51,50 @@ def sample_stanford_imdb_dataset(train_size: int = 5000, dev_size: int = 1000, t
     LOGGER.debug('Creating temp working directory')
     os.makedirs(temp_working_directory)
 
-    # download
-    LOGGER.debug('Downloading %s and saving into %s', master_data_set_url, raw_data_file_path)
-    HttpHelper.download_file(master_data_set_url, raw_data_file_path)
+    try:
+        # download
+        LOGGER.debug('Downloading %s and saving into %s', master_data_set_url, raw_data_file_path)
+        HttpHelper.download_file(master_data_set_url, raw_data_file_path)
 
-    # unpack/extract
-    LOGGER.debug('Unpacking %s', raw_data_file_path)
-    shutil.unpack_archive(raw_data_file_path, temp_working_directory)
+        # unpack/extract
+        LOGGER.debug('Unpacking %s', raw_data_file_path)
+        shutil.unpack_archive(raw_data_file_path, temp_working_directory)
 
-    # collect training files for both positive and negative classes
-    training_class_files: dict = {
-        1: glob.glob('{}/**/train/**/pos/**/*.txt'.format(temp_working_directory), recursive=True),
-        -1: glob.glob('{}/**/train/**/neg/**/*.txt'.format(temp_working_directory), recursive=True)
-    }
-    # collect test files for both positive and negative classes
-    test_class_files: dict = {
-        1: glob.glob('{}/**/test/**/pos/**/*.txt'.format(temp_working_directory), recursive=True),
-        -1: glob.glob('{}/**/test/**/neg/**/*.txt'.format(temp_working_directory), recursive=True)
-    }
+        # collect training files for both positive and negative classes
+        training_class_files: dict = {
+            1: glob.glob('{}/**/train/**/pos/**/*.txt'.format(temp_working_directory), recursive=True),
+            -1: glob.glob('{}/**/train/**/neg/**/*.txt'.format(temp_working_directory), recursive=True)
+        }
+        # collect test files for both positive and negative classes
+        test_class_files: dict = {
+            1: glob.glob('{}/**/test/**/pos/**/*.txt'.format(temp_working_directory), recursive=True),
+            -1: glob.glob('{}/**/test/**/neg/**/*.txt'.format(temp_working_directory), recursive=True)
+        }
 
-    # sample from the population of train and test files, to create smaller datasets
-    # indices collected below are indices to train/test file paths
-    train_dev_indices: list = get_sample_dataset([(c, len(arr)) for c, arr in training_class_files.items()],
-                                                 train_size+dev_size)
-    train_indices: list = train_dev_indices[:train_size]
-    dev_indices: list = train_dev_indices[train_size:]
-    test_indices: list = get_sample_dataset([(c, len(arr)) for c, arr in test_class_files.items()],
-                                            test_size)
+        # sample from the population of train and test files, to create smaller datasets
+        # indices collected below are indices to train/test file paths
+        train_dev_indices: list = get_sample_dataset([(c, len(arr)) for c, arr in training_class_files.items()],
+                                                     train_size+dev_size)
+        train_indices: list = train_dev_indices[:train_size]
+        dev_indices: list = train_dev_indices[train_size:]
+        test_indices: list = get_sample_dataset([(c, len(arr)) for c, arr in test_class_files.items()],
+                                                test_size)
 
-    # read from sampled raw files and save to train/dev/test files
-    train_file_path = ConfigHelper.get_config_value(STANFORD_MOVIE_REVIEW_TRAIN_FILE_PATH, CORPORA_CONFIG_SECTION)
-    LOGGER.debug('Saving training dataset to %s', train_file_path)
-    _save_dataset(train_file_path, train_indices, training_class_files)
+        # read from sampled raw files and save to train/dev/test files
+        train_file_path = ConfigHelper.get_config_value(STANFORD_MOVIE_REVIEW_TRAIN_FILE_PATH, CORPORA_CONFIG_SECTION)
+        LOGGER.debug('Saving training dataset to %s', train_file_path)
+        _save_dataset(train_file_path, train_indices, training_class_files)
 
-    dev_file_path = ConfigHelper.get_config_value(STANFORD_MOVIE_REVIEW_DEV_FILE_PATH, CORPORA_CONFIG_SECTION)
-    LOGGER.debug('Saving dev dataset to %s', train_file_path)
-    _save_dataset(dev_file_path, dev_indices, training_class_files)
+        dev_file_path = ConfigHelper.get_config_value(STANFORD_MOVIE_REVIEW_DEV_FILE_PATH, CORPORA_CONFIG_SECTION)
+        LOGGER.debug('Saving dev dataset to %s', train_file_path)
+        _save_dataset(dev_file_path, dev_indices, training_class_files)
 
-    test_file_path = ConfigHelper.get_config_value(STANFORD_MOVIE_REVIEW_TEST_FILE_PATH, CORPORA_CONFIG_SECTION)
-    LOGGER.debug('Saving test dataset to %s', train_file_path)
-    _save_dataset(test_file_path, test_indices, test_class_files)
+        test_file_path = ConfigHelper.get_config_value(STANFORD_MOVIE_REVIEW_TEST_FILE_PATH, CORPORA_CONFIG_SECTION)
+        LOGGER.debug('Saving test dataset to %s', train_file_path)
+        _save_dataset(test_file_path, test_indices, test_class_files)
+    finally:
+        LOGGER.debug('Deleting temp working directory %s', temp_working_directory)
+        shutil.rmtree(temp_working_directory)
 
 
 def _save_dataset(file_path: str, class_indices: list, class_files: dict):
