@@ -2,6 +2,7 @@
 Module for utility functions and helper classes
 """
 import os
+import re
 from configparser import ConfigParser, ExtendedInterpolation, NoOptionError, NoSectionError
 
 import requests
@@ -44,6 +45,30 @@ class HttpHelper:
             with open(local_file_path, 'wb') as f:
                 for chunk in r.iter_content(chunk_size=4096):
                     f.write(chunk)
+
+
+class StringHelper:
+    @classmethod
+    def find_markups(cls, s: str):
+        """
+        Finds all substrings which form html (or even xml) markups
+        Any substring that begins with < and ends with > is treated as a markup
+        """
+        return re.findall('<.*?>', s)
+
+
+class FileHelper:
+    @classmethod
+    def read_lines(cls, file_path: str):
+        """
+        Reads one line at a time and yields the same
+        """
+        with open(file_path, 'r', encoding="utf-8") as f:
+            while True:
+                line = f.readline()
+                if len(line) == 0:
+                    break
+                yield line
 
 
 def get_sample_dataset(class_counts: list, sample_size: int) -> list:
