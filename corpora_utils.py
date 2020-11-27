@@ -53,8 +53,7 @@ def sample_stanford_imdb_dataset(train_size: int = 5000, dev_size: int = 1000, t
 
     try:
         # download
-        LOGGER.debug('Downloading %s and saving into %s', master_data_set_url, raw_data_file_path)
-        HttpHelper.download_file(master_data_set_url, raw_data_file_path)
+        _download_file(master_data_set_url, raw_data_file_path)
 
         # unpack/extract
         LOGGER.debug('Unpacking %s', raw_data_file_path)
@@ -97,9 +96,14 @@ def sample_stanford_imdb_dataset(train_size: int = 5000, dev_size: int = 1000, t
         shutil.rmtree(temp_working_directory)
 
 
+def _download_file(url: str, local_file_path: str):
+    LOGGER.debug('Downloading %s and saving into %s', url, local_file_path)
+    HttpHelper.download_file(url, local_file_path)
+
+
 def _save_dataset(file_path: str, class_indices: list, class_files: dict):
     with codecs.open(file_path, 'w', encoding='utf-8') as f:
         for c, i in class_indices:
             sample_file_path = class_files[c][i]
             with codecs.open(sample_file_path, 'r', encoding='utf-8') as sf:
-                f.write('{} {}\n'.format(c, sf.read()))
+                f.write('{} {}\n'.format(c, sf.read().strip()))
