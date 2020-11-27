@@ -178,3 +178,18 @@ def get_stanford_imdb_labels_features(file_path: str):
             label, text = line.split(sep=' ', maxsplit=1)
             data.append((int(label), get_bow_dictionary(clean_text(text))))
     return data
+
+
+def load_stanford_imdb_train_data():
+    return get_stanford_imdb_labels_features(ConfigHelper.get_config_value(STANFORD_MOVIE_REVIEW_TRAIN_FILE_PATH,
+                                                                           CORPORA_CONFIG_SECTION))
+
+
+def load_stanford_imdb_test_data():
+    return get_stanford_imdb_labels_features(ConfigHelper.get_config_value(STANFORD_MOVIE_REVIEW_TEST_FILE_PATH,
+                                                                           CORPORA_CONFIG_SECTION))
+
+
+def load_stanford_imdb_dev_data():
+    return get_stanford_imdb_labels_features(ConfigHelper.get_config_value(STANFORD_MOVIE_REVIEW_DEV_FILE_PATH,
+                                                                           CORPORA_CONFIG_SECTION))
